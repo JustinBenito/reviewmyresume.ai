@@ -201,6 +201,13 @@ export default function AnalysisPage() {
     fetchResumeAndAnalyze()
   }, [user, router])
 
+  const handleManual = () => {
+    router.push("/dashboard")
+  }
+
+
+
+
   if (loading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -442,7 +449,7 @@ function FeedbackCard({ title, score, feedback }) {
         </div>
       </CardContent>
       <CardFooter>
-        <Button variant="outline" className="w-full">
+        <Button variant="outline" className="w-full" onClick={handleManual()}>
           <div className="flex items-center justify-center gap-2"> 
           <p>👀 Apply for Manual Review</p>
           </div>
