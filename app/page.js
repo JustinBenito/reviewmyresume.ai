@@ -5,8 +5,18 @@ import { ResumeUploader } from "@/components/resume-uploader"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { motion } from "framer-motion"
+import { useEffect } from "react"
 
 export default function Home() {
+
+  useEffect(()=>{
+    useEffect(() => {
+      if (process.env.NODE_ENV === 'production') {
+        console.error = () => {};
+      }
+    }, []);    
+  }, [])
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />

@@ -9,7 +9,6 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata = {
   title: "ReviewMyResume.ai",
   description: "Get your resume reviewed by AI and industry professionals",
-    generator: 'v0.dev'
 }
 
 export default function RootLayout({ children }) {
