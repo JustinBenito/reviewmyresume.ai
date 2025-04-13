@@ -30,9 +30,9 @@ export function Navbar() {
       <div className="container flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
-            <FileText className="h-6 w-6 text-primary" />
+            <FileText className="h-6 w-6 text-black" />
           </motion.div>
-          <span className="text-xl font-bold gradient-text">reviewmyresume.ai</span>
+          <span className="text-xl font-bold text-black">review<span className="gradient-text">my</span>resume.ai</span>
         </Link>
         {/* <nav className="hidden md:flex items-center gap-6">
           <Link

@@ -5,9 +5,20 @@ import { ResumeUploader } from "@/components/resume-uploader"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
+import { RoughNotation, RoughNotationGroup } from "react-rough-notation";
 
 export default function Home() {
+
+  const [showUnderline, setShowUnderline] = useState(false);
+
+useEffect(() => {
+  const timeout = setTimeout(() => {
+    setShowUnderline(true);
+  }, 500); // Wait until Framer animation finishes
+  return () => clearTimeout(timeout);
+}, []);
+
 
   useEffect(() => {
     if (process.env.NODE_ENV === 'production') {
@@ -26,14 +37,23 @@ export default function Home() {
 
           <div className="container px-4 py-24 md:py-32">
             <div className="max-w-3xl mx-auto text-center">
-              <motion.h1
-                className="text-4xl md:text-6xl font-bold tracking-tight"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                Get Your Resume <span className="gradient-text">Reviewed</span>
-              </motion.h1>
+            <motion.h1
+  className="text-4xl md:text-6xl font-bold tracking-tight"
+  initial={{ opacity: 0, transform: "translateY(20px)" }}
+  animate={{ opacity: 1, transform: "translateY(0px)" }}
+  transition={{ duration: 0.5 }}
+>
+  Get Your Resume{" "}
+  <RoughNotation
+    type="underline"
+    show={true}
+    animate={true}
+    color="#f59e0b"
+  >
+    <span className="inline-block gradient-text">Reviewed</span>
+  </RoughNotation>
+</motion.h1>
+
               <motion.p
                 className="mt-6 text-lg text-muted-foreground"
                 initial={{ opacity: 0, y: 20 }}
@@ -59,7 +79,20 @@ export default function Home() {
         {/* Features Section */}
         <section className="py-16 bg-muted/50">
           <div className="container px-4">
-            <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
+
+            <h2 className="text-3xl font-bold text-center mb-12">
+            <RoughNotation
+    type="highlight"
+    show={true}
+    animate={true}
+    color="#f59e0b"
+  >
+              How It Works
+            </RoughNotation>
+            </h2>
+
+            
+
             <div className="grid md:grid-cols-3 gap-8">
               {[
                 {
