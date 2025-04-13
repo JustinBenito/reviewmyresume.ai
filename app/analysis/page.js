@@ -119,7 +119,7 @@ export default function AnalysisPage() {
 
         // In a real implementation, you would extract text from the PDF
         // For this demo, we'll use the mock analysis function
-        const analysisResult = await analyzeResume("Sample resume text")
+        const analysisResult = await analyzeResume(publicUrl)
         setAnalysis(analysisResult)
 
         // Calculate total score

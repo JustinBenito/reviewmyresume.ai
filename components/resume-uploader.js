@@ -130,7 +130,7 @@ export function ResumeUploader() {
       // Redirect to the analysis page
       router.push("/analysis")
     } catch (error) {
-      console.error("Upload error:", error)
+      console.error("Upload error:", error.message)
       toast({
         title: "Upload failed",
         description: error.message || "Failed to upload resume",
