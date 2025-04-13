@@ -161,6 +161,24 @@ export default function AnalysisPage() {
             feedback: formatFeedback(analysisData.skills_feedback),
           },
         })
+
+        const totalScore =
+        (analysisData.clarity_score +
+          analysisData.content_score +
+          analysisData.impact_score +
+          analysisData.grammar_score +
+          analysisData.skills_score) * 2
+        
+          const { error: updateError } = await supabase
+          .from("resumes")
+          .update({
+            total_score: totalScore,
+            is_flagged_for_review: totalScore > 70,
+          })
+          .eq("id", resumeData.id)
+
+        if (updateError) throw updateError
+
         setIsAnalyzing(false)
         setHasAnalyzed(true)
 
