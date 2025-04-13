@@ -9,13 +9,11 @@ import { useEffect } from "react"
 
 export default function Home() {
 
-  useEffect(()=>{
-    useEffect(() => {
-      if (process.env.NODE_ENV === 'production') {
-        console.error = () => {};
-      }
-    }, []);    
-  }, [])
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production') {
+      console.error = () => {};
+    }
+  }, []);    
 
   return (
     <div className="min-h-screen flex flex-col">
