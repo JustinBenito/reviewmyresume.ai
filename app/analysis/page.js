@@ -1,5 +1,5 @@
 "use client"
-
+import toast, { Toaster } from 'react-hot-toast';
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/context/auth-context"
@@ -393,7 +393,7 @@ export default function AnalysisPage() {
                 </Tabs>
 
                 {/* Community Button */}
-                <AnimatePresence>
+                {/* <AnimatePresence>
                   {showCommunityButton && (
                     <motion.div
                       initial={{ opacity: 0, y: 50 }}
@@ -410,7 +410,7 @@ export default function AnalysisPage() {
                       </Button>
                     </motion.div>
                   )}
-                </AnimatePresence>
+                </AnimatePresence> */}
               </>
             )}
           </motion.div>
@@ -422,12 +422,32 @@ export default function AnalysisPage() {
 
 function FeedbackCard({ title, score, feedback }) {
 
-
+  const router = useRouter()
   const handleManual = () => {
-    router.push("/dashboard");
+    toast.custom((t) => (
+      <div
+        className={`${
+          t.visible ? "animate-enter" : "animate-leave"
+        } max-w-md w-full bg-white dark:bg-gray-900 shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+      >
+        <div className="flex w-full items-center p-4">
+          <div className="text-2xl mr-3">🔔</div>
+          <div className="flex-1 text-sm text-gray-800 dark:text-white font-medium">
+            Experts have been notified
+          </div>
+        </div>
+      </div>
+    ));
+    
+    
+    setTimeout(() => {
+      router.push("/dashboard");
+    }, 1000); 
   };
+  
 
   return (
+    <>
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
@@ -455,10 +475,12 @@ function FeedbackCard({ title, score, feedback }) {
       <Button onClick={()=>handleManual()} variant="outline" className="w-full" >
 
           <div className="flex items-center justify-center gap-2"> 
-          <p>👀 Apply for Manual Review</p>
+          <p>👀 Apply for Expert Review</p>
           </div>
         </Button>
       </CardFooter>
     </Card>
+    <Toaster />
+    </>
   )
 }
