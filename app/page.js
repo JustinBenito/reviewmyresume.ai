@@ -89,10 +89,10 @@ export default function Home() {
             <div className="max-w-3xl mx-auto text-center">
               <h2 className="text-3xl font-bold mb-6">Ready to improve your resume?</h2>
               <p className="text-lg text-muted-foreground mb-8">
-                Join thousands of job seekers who have improved their resumes and landed their dream jobs.
+                Drop your resume and get it reviewed, Now
               </p>
-              <Button asChild size="lg">
-                <Link href="#upload">Get Started</Link>
+              <Button asChild size="lg" variant="outline" >
+                <Link href="#upload" className="py-2 px-4">Get Started</Link>
               </Button>
             </div>
           </div>

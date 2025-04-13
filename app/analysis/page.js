@@ -416,8 +416,9 @@ function FeedbackCard({ title, score, feedback }) {
       </CardContent>
       <CardFooter>
         <Button variant="outline" className="w-full">
-          <ThumbsUp className="mr-2 h-4 w-4" />
-          This feedback was helpful
+          <div className="flex items-center justify-center gap-2"> 
+          <p>👀 Apply for Manual Review</p>
+          </div>
         </Button>
       </CardFooter>
     </Card>

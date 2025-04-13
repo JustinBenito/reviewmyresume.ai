@@ -142,7 +142,7 @@ export function ResumeUploader() {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full max-w-3xl mx-auto">
       <CardContent className="p-6">
         <div
           className={`border-2 border-dashed rounded-lg p-8 text-center ${
@@ -163,7 +163,7 @@ export function ResumeUploader() {
                 exit={{ opacity: 0, y: -10 }}
                 className="flex flex-col items-center gap-4"
               >
-                <div className="flex items-center justify-between w-full p-3 bg-muted rounded-md">
+                <div className="flex items-center justify-between w-full p-3 rounded-md">
                   <div className="flex items-center gap-2 truncate">
                     <FileUp className="h-5 w-5 text-primary" />
                     <span className="text-sm font-medium truncate">{file.name}</span>
@@ -172,14 +172,14 @@ export function ResumeUploader() {
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
-                <Button onClick={handleUpload} disabled={isUploading} className="w-full">
+                <Button variant="outline" className="border-black" onClick={handleUpload} disabled={isUploading} >
                   {isUploading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Uploading...
+                      
                     </>
                   ) : (
-                    "Upload Resume"
+                    "Confirm Resume"
                   )}
                 </Button>
               </motion.div>
@@ -200,7 +200,7 @@ export function ResumeUploader() {
                     Drag and drop your PDF file here, or click to browse
                   </p>
                 </div>
-                <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+                <Button onClick={() => fileInputRef.current?.click()}>
                   Select PDF File
                 </Button>
               </motion.div>
