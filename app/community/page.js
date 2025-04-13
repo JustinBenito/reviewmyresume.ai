@@ -6,13 +6,14 @@ import { useAuth } from "@/context/auth-context"
 import { Navbar } from "@/components/navbar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { Loader2, MessageSquare, ThumbsUp } from "lucide-react"
 import { motion } from "framer-motion"
 import { getSupabase } from "@/lib/supabase"
 import { useToast } from "@/components/ui/use-toast"
+import { VisuallyHidden } from "@/components/ui/visually-hidden"
 
 export default function CommunityPage() {
   const { user, loading } = useAuth()
@@ -326,6 +327,9 @@ export default function CommunityPage() {
                         </Card>
                       </DialogTrigger>
                       <DialogContent className="max-w-4xl p-0">
+                        <DialogTitle>
+                          <VisuallyHidden>Resume Details - {selectedResume?.file_name}</VisuallyHidden>
+                        </DialogTitle>
                         <div className="grid md:grid-cols-2 h-[80vh]">
                           {/* Resume Preview */}
                           <div className="p-6 border-r overflow-auto">

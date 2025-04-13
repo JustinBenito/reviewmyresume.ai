@@ -20,12 +20,19 @@ export default function DashboardPage() {
   const { user, loading } = useAuth()
   const router = useRouter()
   const [userProfile, setUserProfile] = useState(null)
+  const [resumeUrl, setResume]=useState("")
   const [resumes, setResumes] = useState([])
   const [flaggedResumes, setFlaggedResumes] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [selectedResume, setSelectedResume] = useState(null)
   const [mentorComment, setMentorComment] = useState("")
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
+  const [showCommentPanel, setShowCommentPanel] = useState(false)
+  const [commentResume, setCommentResume] = useState(null)
+  const [resumeComment, setResumeComment] = useState("")
+  const [resumeComments, setResumeComments] = useState([])
+  const [isSubmittingResumeComment, setIsSubmittingResumeComment] = useState(false)
+  const [isLoadingComments, setIsLoadingComments] = useState(false)
   const { toast } = useToast()
 
   useEffect(() => {
@@ -100,9 +107,11 @@ export default function DashboardPage() {
             `)
             .eq("is_flagged_for_review", true)
             .order("created_at", { ascending: false })
-
+          
+            
           if (flaggedError) throw flaggedError
           setFlaggedResumes(flagged)
+
         }
 
         setIsLoading(false)
@@ -113,6 +122,14 @@ export default function DashboardPage() {
     }
 
     fetchUserAndResumes()
+
+        // const {
+        //   data: { publicUrl },
+        // } = supabase.storage.from("resumes").getPublicUrl(flaggedResumes.file_path)
+        
+        // setResume(publicUrl);
+        console.log("Public", flaggedResumes);
+
   }, [user])
 
   const handleResumeClick = (resume) => {
@@ -161,6 +178,109 @@ export default function DashboardPage() {
     }
   }
 
+  const handleResumeCommentSubmit = async (e) => {
+    e.preventDefault()
+
+    if (!resumeComment.trim()) return
+
+    setIsSubmittingResumeComment(true)
+
+    try {
+      const supabase = getSupabase()
+
+      // Add comment to the resume
+      const { data: newComment, error } = await supabase.from("comments").insert({
+        resume_id: commentResume.id,
+        user_id: user.id,
+        content: resumeComment.trim(),
+        is_mentor_comment: userProfile?.is_mentor || false,
+      }).select(`
+        id,
+        content,
+        created_at,
+        is_mentor_comment,
+        users (id, full_name, avatar_url, email)
+      `)
+
+      if (error) throw error
+
+      toast({
+        title: "Comment added",
+        description: "Your comment has been added successfully",
+      })
+
+      // Add the new comment to the list
+      if (newComment && newComment.length > 0) {
+        setResumeComments([newComment[0], ...resumeComments])
+      }
+      
+      setResumeComment("")
+    } catch (error) {
+      console.error("Error adding comment:", error)
+      toast({
+        title: "Failed to add comment",
+        description: error.message || "An error occurred",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmittingResumeComment(false)
+    }
+  }
+  
+  const handleCommentClick = (resume) => {
+    setCommentResume(resume)
+    setResumeComment("")
+    setShowCommentPanel(true)
+    fetchResumeComments(resume.id)
+  }
+
+  const fetchResumeComments = async (resumeId) => {
+    setIsLoadingComments(true)
+    setResumeComments([])
+    
+    try {
+      const supabase = getSupabase()
+      
+      const { data, error } = await supabase
+        .from("comments")
+        .select(`
+          id,
+          content,
+          created_at,
+          is_mentor_comment,
+          users (id, full_name, avatar_url, email)
+        `)
+        .eq("resume_id", resumeId)
+        .order("created_at", { ascending: false })
+      
+      if (error) throw error
+      
+      setResumeComments(data || [])
+    } catch (error) {
+      console.error("Error fetching comments:", error)
+      toast({
+        title: "Failed to load comments",
+        description: error.message || "An error occurred",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoadingComments(false)
+    }
+  }
+
+const handleResumeReview = async (resume) => {
+
+  const supabase = getSupabase()
+
+
+          const {
+          data: { publicUrl },
+        } = supabase.storage.from("resumes").getPublicUrl(resume)
+        
+        window.open(publicUrl);
+}
+
+
   const handleBecomeMentor = async () => {
     try {
       const supabase = getSupabase()
@@ -194,7 +314,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col relative">
       <Navbar />
       <main className="flex-1 container py-8">
         <div className="max-w-6xl mx-auto">
@@ -222,20 +342,30 @@ export default function DashboardPage() {
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : (
-              <Tabs defaultValue="my-resumes">
-                <TabsList className="mb-8">
-                  <TabsTrigger value="my-resumes">My Resumes</TabsTrigger>
-                  {userProfile?.is_mentor && (
-                    <TabsTrigger value="flagged-resumes">
-                      Flagged Resumes
-                      {flaggedResumes.length > 0 && (
-                        <Badge variant="secondary" className="ml-2">
-                          {flaggedResumes.length}
-                        </Badge>
-                      )}
-                    </TabsTrigger>
-                  )}
-                </TabsList>
+<Tabs defaultValue="my-resumes" className="w-full">
+  <TabsList className="flex space-x-4 mb-8 border-b border-gray-200">
+    <TabsTrigger
+      value="my-resumes"
+      className="px-4 py-2 text-sm font-medium transition-colors data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 text-gray-600"
+    >
+      My Resumes
+    </TabsTrigger>
+
+    {userProfile?.is_mentor && (
+      <TabsTrigger
+  value="flagged-resumes"
+  className="flex items-center px-4 py-2 text-sm font-medium transition-colors text-gray-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
+>
+  <span>Flagged Resumes</span>
+  {flaggedResumes.length > 0 && (
+    <Badge variant="secondary" className="ml-2 border-none">
+      {flaggedResumes.length}
+    </Badge>
+  )}
+</TabsTrigger>
+
+    )}
+  </TabsList>
 
                 <TabsContent value="my-resumes">
                   {resumes.length === 0 ? (
@@ -290,7 +420,7 @@ export default function DashboardPage() {
                               <Button variant="outline" asChild>
                                 <a href={`/analysis?id=${resume.id}`}>View Analysis</a>
                               </Button>
-                              <Button variant="ghost" size="icon">
+                              <Button variant="ghost" size="icon" onClick={() => handleCommentClick(resume)}>
                                 <MessageSquare className="h-4 w-4" />
                               </Button>
                             </CardFooter>
@@ -358,6 +488,7 @@ export default function DashboardPage() {
                                       <div className="grid grid-cols-5 gap-2">
                                         <ScoreIndicator
                                           label="Clarity"
+            
                                           score={resume.resume_reviews[0].clarity_score}
                                         />
                                         <ScoreIndicator
@@ -373,8 +504,11 @@ export default function DashboardPage() {
                                       </div>
                                     )}
                                   </CardContent>
-                                  <CardFooter>
-                                    <Button className="w-full">Review Resume</Button>
+                                  <CardFooter className="flex justify-between">
+                                    <Button onClick={()=>handleResumeReview(resume.file_path)} className="">Review Resume</Button>
+                                    <Button variant="ghost" size="icon" onClick={() => handleCommentClick(resume)}>
+                                <MessageSquare className="h-4 w-4" />
+                              </Button>
                                   </CardFooter>
                                 </Card>
                               </DialogTrigger>
@@ -478,6 +612,97 @@ export default function DashboardPage() {
           </motion.div>
         </div>
       </main>
+      
+      {/* Comment Side Panel */}
+      {showCommentPanel && commentResume && (
+        <div className="fixed inset-y-0 right-0 w-96 bg-background border-l shadow-lg z-50 flex flex-col">
+          <div className="p-4 border-b flex justify-between items-center">
+            <h3 className="font-semibold">Resume Comments</h3>
+            <Button variant="ghost" size="icon" onClick={() => setShowCommentPanel(false)}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </Button>
+          </div>
+          
+          <div className="p-4 border-b">
+            <h4 className="text-sm font-medium mb-2">{commentResume.file_name}</h4>
+            <div className="text-sm text-muted-foreground">
+              Uploaded on {new Date(commentResume.created_at).toLocaleDateString()}
+            </div>
+          </div>
+          
+          <div className="flex-1 overflow-auto p-4">
+            {isLoadingComments ? (
+              <div className="flex justify-center py-4">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              </div>
+            ) : resumeComments.length === 0 ? (
+              <div className="text-sm text-muted-foreground text-center py-4">
+                No comments yet. Be the first to comment!
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {resumeComments.map((comment) => (
+                  <div key={comment.id} className="border rounded-lg p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src={comment.users?.avatar_url || "/placeholder.svg"} />
+                        <AvatarFallback>
+                          {comment.users?.full_name?.charAt(0) ||
+                            comment.users?.email?.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="text-sm font-medium flex items-center gap-2">
+                          {comment.users?.full_name || "Anonymous"}
+                          {comment.is_mentor_comment && (
+                            <Badge variant="outline" className="text-xs py-0 h-5">
+                              Mentor
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {new Date(comment.created_at).toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-sm whitespace-pre-wrap">{comment.content}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          
+          <div className="p-4 border-t">
+            <form onSubmit={handleResumeCommentSubmit}>
+              <div className="space-y-4">
+                <div>
+                  <Textarea
+                    placeholder="Add your comment..."
+                    className="min-h-24"
+                    value={resumeComment}
+                    onChange={(e) => setResumeComment(e.target.value)}
+                    disabled={isSubmittingResumeComment}
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  className="w-full"
+                  disabled={!resumeComment.trim() || isSubmittingResumeComment}
+                >
+                  {isSubmittingResumeComment ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    "Add Comment"
+                  )}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

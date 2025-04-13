@@ -17,10 +17,12 @@ import Link from "next/link"
 export default function AnalysisPage() {
   const { user, loading } = useAuth()
   const router = useRouter()
+  const [tab, setTab] = useState("clarity");
   const [resume, setResume] = useState(null)
-  const [analysis, setAnalysis] = useState(null)
+  const [analysis, setAnalysis] = useState({})
   const [isAnalyzing, setIsAnalyzing] = useState(true)
   const [showCommunityButton, setShowCommunityButton] = useState(false)
+  const [hasAnalyzed, setHasAnalyzed] = useState(false)
 
   useEffect(() => {
     if (!loading && !user) {
@@ -33,133 +35,139 @@ export default function AnalysisPage() {
       if (!user) return
 
       try {
+        setIsAnalyzing(true)
         const supabase = getSupabase()
 
-        // Fetch the most recent resume
-        const { data: resumeData, error: resumeError } = await supabase
+           // Get the resume ID from URL if available
+      const urlParams = new URLSearchParams(window.location.search)
+      const resumeIdFromUrl = urlParams.get('id')
+      console.log("Resume ID from URL:", urlParams)
+      
+      let resumeData
+      let resumeError
+      
+      // If we have an ID in the URL, use that specific resume
+      if (resumeIdFromUrl) {
+        const response = await supabase
+          .from("resumes")
+          .select("*")
+          .eq("id", resumeIdFromUrl)
+          .eq("user_id", user.id) // Security check to ensure user owns this resume
+          .single()
+          
+        resumeData = response.data
+        resumeError = response.error
+      } else {
+        // Otherwise fetch the most recent resume (existing logic)
+        const response = await supabase
           .from("resumes")
           .select("*")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false })
           .limit(1)
           .single()
+          
+        resumeData = response.data
+        console.log("Resume Data:", resumeData)
+        resumeError = response.error
+      }
 
-        if (resumeError) throw resumeError
-        if (!resumeData) {
-          router.push("/")
-          return
-        }
+      if (resumeError) throw resumeError
+      if (!resumeData) {
+        router.push("/")
+        return
+      }
 
-        setResume(resumeData)
+      //setResume(resumeData)
+
 
         // Check if analysis already exists
-        const { data: analysisData, error: analysisError } = await supabase
-          .from("resume_reviews")
-          .select("*")
-          .eq("resume_id", resumeData.id)
-          .single()
+        const { data: existingAnalysis, error: existingAnalysisError } = await supabase
+        .from("resume_reviews")
+        .select("*")
+        .eq("resume_id", resumeData.id)
+        .order("created_at", { ascending: false }) // Get the most recent one
+        .limit(1)
 
-        if (!analysisError && analysisData) {
-          setAnalysis({
-            clarity: {
-              score: analysisData.clarity_score,
-              feedback: {
-                good: analysisData.clarity_feedback.split("|")[0] || "",
-                bad: analysisData.clarity_feedback.split("|")[1] || "",
-                ugly: analysisData.clarity_feedback.split("|")[2] || "",
-              },
-            },
-            content: {
-              score: analysisData.content_score,
-              feedback: {
-                good: analysisData.content_feedback.split("|")[0] || "",
-                bad: analysisData.content_feedback.split("|")[1] || "",
-                ugly: analysisData.content_feedback.split("|")[2] || "",
-              },
-            },
-            impact: {
-              score: analysisData.impact_score,
-              feedback: {
-                good: analysisData.impact_feedback.split("|")[0] || "",
-                bad: analysisData.impact_feedback.split("|")[1] || "",
-                ugly: analysisData.impact_feedback.split("|")[2] || "",
-              },
-            },
-            grammar: {
-              score: analysisData.grammar_score,
-              feedback: {
-                good: analysisData.grammar_feedback.split("|")[0] || "",
-                bad: analysisData.grammar_feedback.split("|")[1] || "",
-                ugly: analysisData.grammar_feedback.split("|")[2] || "",
-              },
-            },
-            skills: {
-              score: analysisData.skills_score,
-              feedback: {
-                good: analysisData.skills_feedback.split("|")[0] || "",
-                bad: analysisData.skills_feedback.split("|")[1] || "",
-                ugly: analysisData.skills_feedback.split("|")[2] || "",
-              },
-            },
-          })
-          setIsAnalyzing(false)
+        console.log("Existing Analysis:", existingAnalysis)
+        console.log("Existing Analysis error:", existingAnalysisError)
 
-          // Show community button after 5 seconds
-          setTimeout(() => {
-            setShowCommunityButton(true)
-          }, 5000)
-
-          return
-        }
-
-        // If no analysis exists, get the file URL and analyze it
-        const {
-          data: { publicUrl },
-        } = supabase.storage.from("resumes").getPublicUrl(resumeData.file_path)
-
-        // In a real implementation, you would extract text from the PDF
-        // For this demo, we'll use the mock analysis function
-        const analysisResult = await analyzeResume(publicUrl)
-        setAnalysis(analysisResult)
-
-        // Calculate total score
-        const totalScore =
-          (analysisResult.clarity.score +
-            analysisResult.content.score +
-            analysisResult.impact.score +
-            analysisResult.grammar.score +
-            analysisResult.skills.score) *
-          2 // Convert to percentage (out of 50)
-
-        // Save analysis to database
-        const { error: saveError } = await supabase.from("resume_reviews").insert({
-          resume_id: resumeData.id,
-          clarity_score: analysisResult.clarity.score,
-          content_score: analysisResult.content.score,
-          impact_score: analysisResult.impact.score,
-          grammar_score: analysisResult.grammar.score,
-          skills_score: analysisResult.skills.score,
-          clarity_feedback: `${analysisResult.clarity.feedback.good}|${analysisResult.clarity.feedback.bad}|${analysisResult.clarity.feedback.ugly}`,
-          content_feedback: `${analysisResult.content.feedback.good}|${analysisResult.content.feedback.bad}|${analysisResult.content.feedback.ugly}`,
-          impact_feedback: `${analysisResult.impact.feedback.good}|${analysisResult.impact.feedback.bad}|${analysisResult.impact.feedback.ugly}`,
-          grammar_feedback: `${analysisResult.grammar.feedback.good}|${analysisResult.grammar.feedback.bad}|${analysisResult.grammar.feedback.ugly}`,
-          skills_feedback: `${analysisResult.skills.feedback.good}|${analysisResult.skills.feedback.bad}|${analysisResult.skills.feedback.ugly}`,
+        const formatFeedback = (feedback) => ({
+          good: feedback.split("|")[0] || "",
+          bad: feedback.split("|")[1] || "",
+          ugly: feedback.split("|")[2] || "",
         })
 
-        if (saveError) throw saveError
+        let analysisData
+        if (existingAnalysis.length > 0) {
+          // Use existing analysis
+          analysisData = existingAnalysis[0]
+          console.log("I am here in existing");
+        } else {
+          // Generate new analysis only if one doesn't exist
+          const {
+            data: { publicUrl },
+          } = supabase.storage.from("resumes").getPublicUrl(resumeData.file_path)
 
-        // Update resume with total score and flag for review if score > 70%
-        const { error: updateError } = await supabase
-          .from("resumes")
-          .update({
-            total_score: totalScore,
-            is_flagged_for_review: totalScore > 70,
-          })
-          .eq("id", resumeData.id)
+          const analysisResult = await analyzeResume(publicUrl)
+          
+          // Store the analysis result in the database
+          const { data: newAnalysis, error: insertError } = await supabase
+            .from("resume_reviews")
+            .insert({
+              resume_id: resumeData.id,
+              clarity_score: analysisResult.clarity.score,
+              clarity_feedback: `${analysisResult.clarity.feedback.good}|${analysisResult.clarity.feedback.bad}|${analysisResult.clarity.feedback.ugly}`,
+              content_score: analysisResult.content.score,
+              content_feedback: `${analysisResult.content.feedback.good}|${analysisResult.content.feedback.bad}|${analysisResult.content.feedback.ugly}`,
+              impact_score: analysisResult.impact.score,
+              impact_feedback: `${analysisResult.impact.feedback.good}|${analysisResult.impact.feedback.bad}|${analysisResult.impact.feedback.ugly}`,
+              grammar_score: analysisResult.grammar.score,
+              grammar_feedback: `${analysisResult.grammar.feedback.good}|${analysisResult.grammar.feedback.bad}|${analysisResult.grammar.feedback.ugly}`,
+              skills_score: analysisResult.skills.score,
+              skills_feedback: `${analysisResult.skills.feedback.good}|${analysisResult.skills.feedback.bad}|${analysisResult.skills.feedback.ugly}`,
+            })
+            .select()
+            .single()
 
-        if (updateError) throw updateError
+            console.log("I am here in fetching");
 
+          if (insertError)
+            {throw insertError}
+
+          analysisData = newAnalysis
+        }
+
+        // Set the analysis data regardless of whether it was existing or new
+        setAnalysis({
+          clarity: {
+            score: analysisData.clarity_score,
+            feedback: formatFeedback(analysisData.clarity_feedback),
+          },
+          content: {
+            score: analysisData.content_score,
+            feedback: formatFeedback(analysisData.content_feedback),
+          },
+          impact: {
+            score: analysisData.impact_score,
+            feedback: formatFeedback(analysisData.impact_feedback),
+          },
+          grammar: {
+            score: analysisData.grammar_score,
+            feedback: formatFeedback(analysisData.grammar_feedback),
+          },
+          skills: {
+            score: analysisData.skills_score,
+            feedback: formatFeedback(analysisData.skills_feedback),
+          },
+        })
         setIsAnalyzing(false)
+        setHasAnalyzed(true)
+
+        // Show community button after 5 seconds
+        setTimeout(() => {
+          setShowCommunityButton(true)
+        }, 5000)
 
         // Show community button after 5 seconds
         setTimeout(() => {
@@ -168,6 +176,7 @@ export default function AnalysisPage() {
       } catch (error) {
         console.error("Error fetching or analyzing resume:", error)
         setIsAnalyzing(false)
+        setHasAnalyzed(true)
       }
     }
 
@@ -311,13 +320,13 @@ export default function AnalysisPage() {
                 </Card>
 
                 {/* Detailed Analysis Tabs */}
-                <Tabs defaultValue="clarity">
+                <Tabs value={tab} onValueChange={setTab}>
                   <TabsList className="grid grid-cols-5 mb-8">
-                    <TabsTrigger value="clarity">Clarity</TabsTrigger>
-                    <TabsTrigger value="content">Content</TabsTrigger>
-                    <TabsTrigger value="impact">Impact</TabsTrigger>
-                    <TabsTrigger value="grammar">Grammar</TabsTrigger>
-                    <TabsTrigger value="skills">Skills</TabsTrigger>
+                    <TabsTrigger value="clarity" className="py-2.5">Clarity</TabsTrigger>
+                    <TabsTrigger value="content" className="py-2.5">Content</TabsTrigger>
+                    <TabsTrigger value="impact" className="py-2.5">Impact</TabsTrigger>
+                    <TabsTrigger value="grammar" className="py-2.5">Grammar</TabsTrigger>
+                    <TabsTrigger value="skills" className="py-2.5">Skills</TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="clarity">
@@ -371,7 +380,7 @@ export default function AnalysisPage() {
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
                       className="fixed bottom-8 right-8"
                     >
-                      <Button asChild size="lg" className="shadow-lg">
+                      <Button asChild size="lg" className="flex justify-between shadow-lg py-3 px-2 bg-white border ">
                         <Link href="/community">
                           <Users className="mr-2 h-5 w-5" />
                           See Similar Resumes

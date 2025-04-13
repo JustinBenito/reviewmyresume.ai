@@ -24,7 +24,7 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                Get Your Resume <span className="gradient-text">Reviewed</span> by AI
+                Get Your Resume <span className="gradient-text">Reviewed</span>
               </motion.h1>
               <motion.p
                 className="mt-6 text-lg text-muted-foreground"
@@ -32,7 +32,7 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
               >
-                Upload your resume and get instant feedback on structure, content, impact, grammar, and skills. Connect
+                Upload your resume and get instant feedback. <br /> Connect
                 with mentors and see how your resume compares to others in your field.
               </motion.p>
 
@@ -101,18 +101,8 @@ export default function Home() {
 
       <footer className="border-t py-6 md:py-8">
         <div className="container flex flex-col md:flex-row items-center justify-between gap-4 px-4">
-          <p className="text-sm text-muted-foreground">© 2023 ReviewMyResume.ai. All rights reserved.</p>
-          <div className="flex gap-6">
-            <Link href="/privacy" className="text-sm text-muted-foreground hover:text-foreground">
-              Privacy
-            </Link>
-            <Link href="/terms" className="text-sm text-muted-foreground hover:text-foreground">
-              Terms
-            </Link>
-            <Link href="/contact" className="text-sm text-muted-foreground hover:text-foreground">
-              Contact
-            </Link>
-          </div>
+          <p className="text-sm text-muted-foreground">© 2025 ReviewMyResume.ai. All rights reserved.</p>
+          <p className="text-sm text-muted-foreground">Built with luv 🩵 by Justin Benito</p>
         </div>
       </footer>
     </div>

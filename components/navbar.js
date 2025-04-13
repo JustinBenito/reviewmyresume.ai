@@ -32,9 +32,9 @@ export function Navbar() {
           <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
             <FileText className="h-6 w-6 text-primary" />
           </motion.div>
-          <span className="text-xl font-bold gradient-text">ReviewMyResume.ai</span>
+          <span className="text-xl font-bold gradient-text">reviewmyresume.ai</span>
         </Link>
-        <nav className="hidden md:flex items-center gap-6">
+        {/* <nav className="hidden md:flex items-center gap-6">
           <Link
             href="/"
             className={`text-sm font-medium transition-colors hover:text-primary ${
@@ -61,22 +61,25 @@ export function Navbar() {
               Dashboard
             </Link>
           )}
-        </nav>
-        <div className="flex items-center gap-4">
+        </nav> */}
+        <div className="flex items-center justify-center gap-4">
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage
-                      src={user.user_metadata?.avatar_url || "/placeholder.svg"}
-                      alt={user.user_metadata?.full_name || user.email}
-                    />
-                    <AvatarFallback>{user.email?.charAt(0).toUpperCase()}</AvatarFallback>
-                  </Avatar>
+                <Button variant="ghost" className="p-0 h-8 w-8 rounded-full">
+                <Avatar className="h-8 w-8 rounded-full overflow-hidden border border-gray-300">
+                  <AvatarImage
+                    src={user.user_metadata?.avatar_url || "/placeholder.svg"}
+                    alt={user.user_metadata?.full_name || user.email}
+                    className="h-full w-full object-cover rounded-full"
+                  />
+                  <AvatarFallback className="text-xs">
+                    {user.email?.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuContent className="w-56 p-4 bg-white" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">{user.user_metadata?.full_name || "User"}</p>
@@ -84,14 +87,14 @@ export function Navbar() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem asChild className="mt-4">
                   <Link href="/dashboard">
                     <User className="mr-2 h-4 w-4" />
                     <span>Dashboard</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut}>
+                <DropdownMenuItem className="mt-2" onClick={signOut}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>
