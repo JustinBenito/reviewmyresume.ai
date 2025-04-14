@@ -4,18 +4,21 @@ import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { FileUp, Loader2, X } from "lucide-react"
-import { useToast } from "@/components/ui/use-toast"
+// import { useToast } from "@/components/ui/use-toast"
 import { motion, AnimatePresence } from "framer-motion"
 import { useAuth } from "@/context/auth-context"
 import { useRouter } from "next/navigation"
 import { getSupabase } from "@/lib/supabase"
+import EmailModal from "@/components/emailmodal" // adjust path accordingly
+
+import toast, { Toaster } from 'react-hot-toast';
 
 export function ResumeUploader() {
   const [file, setFile] = useState(null)
   const [isDragging, setIsDragging] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef(null)
-  const { toast } = useToast()
+  // const { toast } = useToast()
   const { user, signInWithGithub } = useAuth()
   const router = useRouter()
 
@@ -28,13 +31,18 @@ export function ResumeUploader() {
     setIsDragging(false)
   }
 
+  const [showModal, setShowModal] = useState(false)
+
   const handleDrop = (e) => {
     e.preventDefault()
     setIsDragging(false)
-
+  
     const droppedFile = e.dataTransfer.files[0]
+    toast.success("We are Coming Soon")
+    setShowModal(true) // Show email modal
     validateAndSetFile(droppedFile)
   }
+  
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0]
@@ -64,7 +72,7 @@ export function ResumeUploader() {
       return
     }
 
-    setFile(file)
+   // setFile(file)
   }
 
   const removeFile = () => {
@@ -142,7 +150,9 @@ export function ResumeUploader() {
   }
 
   return (
+    <>
     <Card className="w-full max-w-3xl mx-auto">
+    <EmailModal open={showModal} onClose={() => setShowModal(false)} />
       <CardContent className="p-6">
         <div
           className={`border-2 border-dashed rounded-lg p-8 text-center ${
@@ -200,7 +210,10 @@ export function ResumeUploader() {
                     Drag and drop your PDF file here, or click to browse
                   </p>
                 </div>
-                <Button onClick={() => fileInputRef.current?.click()}>
+                <Button onClick={() => {
+                  setShowModal(true) // Show ema
+                  // fileInputRef.current?.click()
+                  }}>
                   Select PDF File
                 </Button>
               </motion.div>
@@ -209,5 +222,7 @@ export function ResumeUploader() {
         </div>
       </CardContent>
     </Card>
+    <Toaster />
+    </>
   )
 }
