@@ -72,7 +72,7 @@ export function ResumeUploader() {
       return
     }
 
-   // setFile(file)
+    setFile(file)
   }
 
   const removeFile = () => {

@@ -62,7 +62,7 @@ export function Navbar() {
             </Link>
           )}
         </nav> */}
-        {/* <div className="flex items-center justify-center gap-4">
+        <div className="flex items-center justify-center gap-4">
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -101,11 +101,11 @@ export function Navbar() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button asChild>
+            <Button variant="outline" asChild>
               <Link href="/login">Sign In</Link>
             </Button>
           )}
-        </div> */}
+        </div>
       </div>
     </motion.header>
   )
